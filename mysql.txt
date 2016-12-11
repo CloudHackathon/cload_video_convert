@@ -1,0 +1,14 @@
+CREATE TABLE t_seg_video (
+    id bigint(20) unsigned NOT NULL auto_increment,
+    vname varchar(20) NOT NULL default '',
+    format varchar(10) NOT NULL default '',
+    segId int(11) unsigned NOT NULL default 0,
+    status tinyint(4) unsigned NOT NULL default 0,
+    createTime int(11) unsigned NOT NULL default 0,
+    modifyTime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    totalCount int(11) unsigned NOT NULL default 0,
+    info text NOT NULL default '',
+    exti int(16) NOT NULL default 0,
+    exts varchar(1024) NOT NULL default '',
+    PRIMARY KEY  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

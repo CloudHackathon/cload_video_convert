@@ -6,6 +6,8 @@ import sys
 import json
 import socket
 import trans
+import commands
+import time
 
 def finish_update_db(vname, format):
 	try:
@@ -75,11 +77,17 @@ def download_file(ip, name):
 	download_cmd = "/usr/bin/wget -T 7200 -t 3 --user-agent=\"tmpfs_cache\" \"http://" + ip + "/" + name + "\" -O " + dstfile;
 	print download_cmd
 
-	#os.system(download_cmd);
+	os.system(download_cmd);
 	return dstfile
 	
 ip = get_local_ip()
 
+proc_num = commands.getoutput("ps -ef|grep video_convs.py |grep -v grep|wc -l")
+print proc_num
+if(int(proc_num) > 1):
+	sys.exit()
+
+	
 merge_tasks = get_merge_task()
 lenth = len(merge_tasks)
 if(lenth == 0):
@@ -90,18 +98,17 @@ my_format = ""
 cat_cmd = "cat "
 for one_task in merge_tasks:
 	ip = one_task["convsIp"]
-	name = one_task["vname"] + "." + one_task["format"] + "." + str(one_task["segid"]) + ".ts"
+	name = one_task["vname"] + "." + one_task["format"] + "." + str(one_task["segid"] - 1) + ".dst"
 	my_vname = one_task["vname"]
 	my_format = one_task["format"]
 	one_file = download_file(ip, name)
-	cat_cmd = cat_cmd + name + " ";
+	cat_cmd = cat_cmd + one_file + " ";
 ts_file = "/home/ubuntu/hackathon/result/" + my_vname + "." + my_format + ".ts"
 final_file = "/home/ubuntu/hackathon/result/" + my_vname + "." + my_format + ".mp4"
-cat_cmd = cat_cmd + final_file
+cat_cmd = cat_cmd + " > " + ts_file
 print cat_cmd
-#os.system(cat_cmd)
-print final_file
+os.system(cat_cmd)
+print ts_file
+trans.tomp4(ts_file, final_file)
 
 finish_update_db(my_vname, my_format)
-
-sys.exit()

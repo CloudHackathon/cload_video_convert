@@ -49,9 +49,9 @@ def get_local_ip():
 	return ip
 		
 
-vname = "test2"
-format = sys.argv[1]
-file = sys.argv[2]
+vname = sys.argv[1]
+format = sys.argv[2]
+file = sys.argv[3]
 print file
 
 ip = get_local_ip()

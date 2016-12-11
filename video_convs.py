@@ -6,6 +6,8 @@ import sys
 import json
 import socket
 import trans
+import time
+import commands
 
 def update_db(id, status, ip):
 	convsip = ""
@@ -44,6 +46,8 @@ def get_one_convs_task():
 			segId = row[3]
 			accessIp = row[4]
 			print "get data from db, id=%s, vname=%s, format=%s, segId=%s, accessIp=%s" % (id, vname, format, segId, accessIp)
+		if(id != 0):
+			update_db(id, 1, "")
 		conn.commit()
 		cur.close()
 		conn.close()
@@ -64,20 +68,31 @@ def download_file(ip, name):
 	download_cmd = "/usr/bin/wget -T 7200 -t 3 --user-agent=\"tmpfs_cache\" \"http://" + ip + "/" + name + "\" -O " + dstfile
 	print download_cmd
 
-	#os.system(download_cmd);
+	os.system(download_cmd);
 	return dstfile
 		
 
+proc_num = commands.getoutput("ps -ef|grep video_convs.py |grep -v grep|wc -l")
+print proc_num
+if(int(proc_num) > 1):
+	sys.exit()
+
 local_ip = get_local_ip()
 
-(id, vname, format, segid, ip) = get_one_convs_task()
-print "id=%s, vname=%s, format=%s, segId=%s, accessIp=%s" % (id, vname, format, segid, ip)
+while(1):
+	
 
-name = vname + "." + format + ".src_Video_" + str(segid) + ".mp4";
-srcfile = download_file(ip, name)
-dstfile = "/var/www/html/" + vname + "." + format + "." + segid + ".dst"
-
-code = trans.trans(srcfile, dstfile, format)
-
-update_db(id, 2, local_ip)
-
+	(id, vname, format, segid, ip) = get_one_convs_task()
+	if(id == 0):
+		time.sleep(2)
+		continue
+	print "id=%s, vname=%s, format=%s, segId=%s, accessIp=%s" % (id, vname, format, segid, ip)
+	
+	name = vname + "." + format + ".src_Video_" + str(segid - 1) + ".mp4";
+	srcfile = download_file(ip, name)
+	dstfile = "/var/www/html/" + vname + "." + format + "." + str(segid - 1) + ".dst"
+	
+	code = trans.trans(srcfile, dstfile, format)
+	
+	update_db(id, 2, local_ip)
+	
